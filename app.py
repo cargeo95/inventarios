@@ -1,10 +1,11 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
+
 #importamos backend
-from backend.mostradatos import table 
+from backend.mostradatos import mostrarDatos 
 from backend.insertar import *
 from backend.delete import *
 from backend.update import *
@@ -15,15 +16,17 @@ from python_to_postgres import *
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+borrar = delete_proveedor()
 
 app.layout = dbc.Container([
+    dcc.Location(id='url', refresh=False),
     html.H1('TIENDA '),
     dbc.Tabs([
         dcc.Tab(
             label='READ',
             children=[
                 html.H1('Mostrar datos'),
-                table
+                dbc.Table(id='table')
             ]
     
             
@@ -56,38 +59,55 @@ app.layout = dbc.Container([
     ]),       
 ])
 
+#mostrar resultados
+@app.callback(
+    Output('table', 'children'),  # Usa el ID del componente dbc.Table
+    [Input('url', 'pathname')]
+)
+def update_table(pathname):
+    delete_proveedor()
+    return mostrarDatos()
+
+
+#Insertar resultados
 @app.callback(
     Output('mensaje', 'children'),
     [Input('nit', 'value'),
      Input('nombre', 'value'),
      Input('direccion', 'value'),
      Input('telefono', 'value'),
-     Input('submit', 'n_clicks')]
+     Input('submit', 'n_clicks')],
+    State('url', 'pathname')
 )
 
-def insertar(nit,nombre, direccion, telefono, n_clicks):
+def insertar(nit,nombre, direccion, telefono, n_clicks, pathname):
     if n_clicks:
         insert_proveedores(nit, nombre, direccion, telefono)
+        mostrarDatos()
         return "se agregaron los valores correctamente"
+    return None
     
     
 
 @app.callback(
     Output('mensaje_borrar', 'children'),
     [Input('id_borrar', 'value'),
-     Input('delete', 'n_clicks')]
+     Input('delete', 'n_clicks')],
+    State('url', 'pathname')
+    
 )
-def eliminar(id_borrar, n_clicks):
+
+def eliminar(id_borrar, n_clicks, pathname):
     if n_clicks:
         deleteById(id_borrar)
+        mostrarDatos()
         return "se eliminaron los valores correctamente"
 
 
 
 @app.callback(
     Output('result', 'children'),
-    [Input('id_actualizar', 'value')]
-     
+    [Input('id_actualizar', 'value')],
 )
 def show_by_id(selected_id):
 
@@ -119,6 +139,7 @@ def show_by_id(selected_id):
     ])
     
     
+    
 if 'nit_update' in app.layout:
     @app.callback(
         Output('mensaje_actualizar', 'children'),
@@ -127,14 +148,15 @@ if 'nit_update' in app.layout:
         Input('nombre_update', 'value'),
         Input('direccion_update', 'value'),
         Input('telefono_update', 'value'),
-        Input('update', 'n_clicks')]
+        Input('update', 'n_clicks')],
+        State('url', 'pathname')
     )
-    def update_by_id(id_actualizar, nit_update, nombre_update, direccion_update, telefono_update, n_clicks):
+    def update_by_id(id_actualizar, nit_update, nombre_update, direccion_update, telefono_update, n_clicks, pathname):
             
         if n_clicks:
             update_proveedores(id_actualizar, nit_update, nombre_update, direccion_update, telefono_update)
+            mostrarDatos()
             return "se actualizaron los valores correctamente"
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

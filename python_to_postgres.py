@@ -21,7 +21,7 @@ try:
     def select_proveedores():
         data = []
         cur = conn.cursor()
-        cur.execute(' SELECT * FROM proveedores ')
+        cur.execute(' SELECT * FROM proveedores ORDER BY id ASC')
         for record in cur.fetchall():
             data.append(record)     
         conn.commit()
@@ -31,8 +31,7 @@ try:
     ## insertamos proveedores
     def insert_proveedores(nit,nombre, direccion, telefono):
         cur = conn.cursor()
-        # cur.execute('INSERT INTO proveedores (nit, nombre, direccion, telefono) VALUES (%s, %s, %s, %s)', ( nombre, direccion, telefono))
-        cur.execute('INSERT INTO proveedores (id, nit, nombre, direccion, telefono) VALUES (18, %s, %s, %s, %s)', ( nit, nombre, direccion, telefono))
+        cur.execute('INSERT INTO proveedores (nit, nombre, direccion, telefono) VALUES (%s, %s, %s, %s)', (nit, nombre, direccion, telefono))
         conn.commit()
         cur.close()
         
@@ -40,7 +39,7 @@ try:
     def select_proveedores_by_id(id):
         data = []
         cur = conn.cursor()
-        cur.execute('SELECT * FROM proveedores WHERE id = %s', (id,))
+        cur.execute('SELECT * FROM proveedores WHERE id = %s ORDER BY id ASC', (id,))
         for record in cur.fetchall():
             data.append(record)     
         conn.commit()
