@@ -15,6 +15,7 @@ from backend.update import *
 from python_to_postgres import *
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
 
 borrar = delete_proveedor()
 
